@@ -7,6 +7,7 @@ jourNuit.addEventListener('click', () => {
     console.log("entrée")
     body.classList.toggle("darkMode");
 })
+
 const resultsContainer = document.querySelector("#results");
 const button = document.querySelector("#start");
 const btnScreenshot = document.querySelector("#screenshot");
