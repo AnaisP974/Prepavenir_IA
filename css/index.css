@@ -1,0 +1,9 @@
+body {
+  display: flex;
+  flex-direction: row;
+}
+
+canvas {
+  border: solid 0.1rem black;
+  margin-right: 2rem;
+}
