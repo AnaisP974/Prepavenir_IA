@@ -6,7 +6,23 @@
     <link rel="stylesheet" href="./index.css" />
     <title>Document</title>
   </head>
-  <body>
+  <body id="page">
+    <header>
+        <div class="header__switch">
+            <p class="header__switch--p">Jour/Nuit</p>
+            <label class="switch">
+                <input type="checkbox" name="jourNuit" id="jourNuit">
+                <span class="slider round"></span>
+            </label>
+        </div>
+    </header>
+    <section class="container">
+      <article class="container__camera">
+        <h2>CAMERA</h2>
+        <video id="emitter-video" width="100%" height="400px"></video>
+        <button id="start">Démarrer la caméra</button>
+      </article>
+    </section>
     <script type="module" src="./index.js"></script>
   </body>
 </html>
