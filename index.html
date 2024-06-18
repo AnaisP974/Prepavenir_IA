@@ -6,29 +6,34 @@
     <link rel="stylesheet" href="./index.css" />
     <title>Document</title>
   </head>
-
   <body id="page">
     <header>
-        <div class="header__switch">
-            <p class="header__switch--p">Jour/Nuit</p>
-            <label class="switch">
-                <input type="checkbox" name="jourNuit" id="jourNuit">
-                <span class="slider round"></span>
-            </label>
-        </div>
+      <div class="header__switch">
+        <p class="header__switch--p">Jour/Nuit</p>
+        <label class="switch">
+          <input type="checkbox" name="jourNuit" id="jourNuit" />
+          <span class="slider round"></span>
+        </label>
+      </div>
     </header>
-
-  
     <section class="container">
       <article class="container__camera">
         <h2>CAMERA</h2>
         <video id="emitter-video" width="100%" height="400px"></video>
+
         <button id="start">Démarrer la caméra</button>
         <button id="stop">Arrêter la caméra</button>
         <button id="screenshot">Screenshot !</button>
       </article>
+      <article></article>
     </section>
-    <section id="results" class="results"></section>
+    <section id="resultsImages" class="none"></section>
+    <section id="results" class="results">
+      <!-- <div class="chaise">
+        <figure><img src="" alt=""></figure>
+        <figcaption></figcaption>
+      </div> -->
+    </section>
     <script type="module" src="./index.js"></script>
   </body>
 </html>

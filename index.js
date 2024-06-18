@@ -7,13 +7,12 @@ jourNuit.addEventListener('click', () => {
     body.classList.toggle("darkMode");
 })
 
-// ----------  VIDEO  -----------
 const resultsContainer = document.querySelector("#results");
 const button = document.querySelector("#start");
 const btnStop = document.querySelector("#stop");
 const btnScreenshot = document.querySelector("#screenshot");
 const emitterVideo = document.querySelector("#emitter-video");
-let stream; // Déclare une variable pour stocker le flux
+let stream;
 
 /**
  * Fonction qui fait la capture d'écran et injecte l'image dans "resultsContainer".
@@ -28,6 +27,25 @@ const snapshot = () => {
   resultsContainer.appendChild(canvas);
 };
 
+button.addEventListener("click", () => {
+  navigator.getUserMedia(
+    {
+      video: true,
+    },
+    (stream) => {
+      if ("srcObject" in emitterVideo) {
+        emitterVideo.srcObject = stream;
+      } else {
+        emitterVideo.src = window.URL.createObjectURL(stream);
+      }
+      emitterVideo.play();
+    },
+    () => {
+      alert("ERROR: camera or video not available");
+    }
+  );
+});
+
 /**
  * Fonction pour arrêter la caméra.
  */
@@ -41,23 +59,6 @@ const stopCamera = () => {
 /**
  * Ecouteur d'évènement sur le bouton "Démarer la caméra".
  */
-button.addEventListener("click", () => {
-  navigator.mediaDevices.getUserMedia(
-    {
-      video: true,
-    }
-  ).then((mediaStream) => {
-    stream = mediaStream;
-    if ("srcObject" in emitterVideo) {
-      emitterVideo.srcObject = stream;
-    } else {
-      emitterVideo.src = window.URL.createObjectURL(stream);
-    }
-    emitterVideo.play();
-  }).catch(() => {
-    alert("ERROR: camera or video not available");
-  });
-});
 
 /**
  * Ecouteur d'évènment sur la capture d'écran
@@ -65,7 +66,6 @@ button.addEventListener("click", () => {
 btnScreenshot.addEventListener("click", () => {
   snapshot();
 });
-
 /**
  * Ecouteur d'évènement sur "Arrêter la caméra"
  */
