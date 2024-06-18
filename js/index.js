@@ -1,7 +1,10 @@
 const resultsContainer = document.querySelector("#results");
-const button = document.querySelector("#start");
+const btnStart = document.querySelector("#start");
+const btnStop = document.querySelector("#stop");
 const btnScreenshot = document.querySelector("#screenshot");
 const emitterVideo = document.querySelector("#emitter-video");
+let stream; // Déclare une variable pour stocker le flux
+
 
 const canvas = document.querySelector('#canvas');
 const context = canvas.getContext('2d');
@@ -13,7 +16,7 @@ cocoSsd.load().then(loadedModel =>
 });
 
 //////////////////   SNAPSHOT //////////////////////////////////////////////
-/*
+
 const snapshot = () =>
 {
   const canvas = document.createElement("canvas");
@@ -24,11 +27,10 @@ const snapshot = () =>
   resultsContainer.appendChild(canvas);
 };
 
-*/
 
 
 // Demander l'accès à la webcam
-button.addEventListener("click", () =>
+btnStart.addEventListener("click", () =>
 {
  
   navigator.getUserMedia(
@@ -56,9 +58,28 @@ button.addEventListener("click", () =>
   
 });
 
+/**
+ * Ecouteur d'évènement sur "Arrêter la caméra"
+ */
+btnStop.addEventListener("click", () => {
+  stopCamera();
+  console.log("Stop Camera");
+});
+
+/**
+ * Fonction pour arrêter la caméra.
+ */
+const stopCamera = () => {
+  if (stream) {
+    stream.getTracks().forEach(track => track.stop()); // Arrêter toutes les pistes du flux
+    emitterVideo.srcObject = null; // Effacer la source de la vidéo
+  }
+};
+
+
 btnScreenshot.addEventListener("click", () =>
 {
-//  snapshot();
+ snapshot();
 });
 
 
@@ -128,7 +149,9 @@ console.log("Screenshot", valueImg);
 */
 
 
-
+/**
+ *  Fonction de detection et d'analyse du flux vidéo
+ */
 async function analyzeVideo()
 {
 
