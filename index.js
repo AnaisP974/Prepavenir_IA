@@ -1,3 +1,10 @@
+import {
+  dbGetByClass,
+  dbAdd,
+  dbDelete,
+  dbUpgrade,
+} from "./initializeindexedDB.js";
+
 // ----------  MODE JOUR/NUIT  -----------
 const jourNuit = document.getElementById('jourNuit');
 const body = document.getElementById('page');
@@ -7,22 +14,20 @@ jourNuit.addEventListener('click', () => {
     body.classList.toggle("darkMode");
 })
 
+//VARIABLES
 const resultsContainer = document.querySelector("#results");
 const button = document.querySelector("#start");
 const btnStop = document.querySelector("#stop");
 const btnScreenshot = document.querySelector("#screenshot");
 const emitterVideo = document.querySelector("#emitter-video");
+
 let stream;
 
-/**
- * Fonction qui fait la capture d'écran et injecte l'image dans "resultsContainer".
- */
 const snapshot = () => {
   const canvas = document.createElement("canvas");
   canvas.width = emitterVideo.videoWidth; // Définir la largeur du canvas à la largeur de la vidéo
   canvas.height = emitterVideo.videoHeight; // Définir la hauteur du canvas à la hauteur de la vidéo
-  const context = canvas.getContext("2d");
-  context.drawImage(emitterVideo, 0, 0, canvas.width, canvas.height);
+  canvas.getContext("2d").drawImage(emitterVideo, 0, 0, canvas.width, canvas.height);
 
   resultsContainer.appendChild(canvas);
 };
@@ -41,7 +46,7 @@ button.addEventListener("click", () => {
       emitterVideo.play();
     },
     () => {
-      alert("ERROR: camera or video not available");
+      alert("ERROR: Camera aren't available");
     }
   );
 });
@@ -71,4 +76,17 @@ btnScreenshot.addEventListener("click", () => {
  */
 btnStop.addEventListener("click", () => {
   stopCamera();
+});
+
+dbUpgrade();
+
+//DEMO
+//EXEMPLE AJOUT D'UN OBJET
+dbAdd("table", "ouf.com");
+dbAdd("chaise", "pas_ouf.com");
+dbAdd("chaise", "super_ouf.com");
+//EXEMPLE POUR CHERCHER PAR NOM D'OBJET
+dbGetByClass("chaise").then((response) => {
+  const data = response;
+  console.log(data);
 });
