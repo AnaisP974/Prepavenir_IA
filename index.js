@@ -24,6 +24,7 @@ const emitterVideo = document.querySelector("#emitter-video");
 let stream;
 
 const snapshot = () => {
+  //Fonction screenshot/snapshot
   const canvas = document.createElement("canvas");
   canvas.width = emitterVideo.videoWidth; // Définir la largeur du canvas à la largeur de la vidéo
   canvas.height = emitterVideo.videoHeight; // Définir la hauteur du canvas à la hauteur de la vidéo
@@ -33,6 +34,7 @@ const snapshot = () => {
 };
 
 button.addEventListener("click", () => {
+  //Fonction pour appeler la camera
   navigator.getUserMedia(
     {
       video: true,
