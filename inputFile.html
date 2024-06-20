@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Envoyer un email avec une pièce jointe</title>
+    <script src="https://smtpjs.com/v3/smtp.js"></script>
+    <style>
+        #displayedImage {
+            width: 100px; /* Ajustez la taille de l'image selon vos besoins */
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    
+   
+        <input type="file" id="inputFile" style="display: none;" required>
+        <img id="displayedImage" src="./phone.png" alt="Cliquez pour choisir une image">
+    
+        
+   
+    <script>
+        const inputFile = document.getElementById('inputFile');
+        const displayedImage = document.getElementById('displayedImage');
+
+        // Déclencher le clic sur l'input de type file lorsque l'image est cliquée
+        displayedImage.addEventListener('click', () => {
+            inputFile.click();
+        });
+
+        // Mettre à jour l'image affichée lorsque l'utilisateur choisit un fichier
+        inputFile.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    displayedImage.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+    </script>
+</body>
+</html>
