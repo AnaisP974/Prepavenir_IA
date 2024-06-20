@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="./index.css" />
     <title>Document</title>
+    <!-- SMTP : Gestion d'email -->
+    <!-- <script src="https://smtpjs.com/v3/smtp.js"></script> -->
+    <script src="https://smtpjs.com/v3/smtp.js">
+    </script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script> -->
+     <!-- DE5744C641A5A84724FE1207496FAA199AC07602B8B709F654470443B8FCDE925970C4314569D53F5715826337237264 -->
   </head>
 
   <body id="page">
@@ -28,6 +34,17 @@
         <button id="screenshot">Screenshot !</button>
       </article>
     </section>
+
+    <form id="sendEmail">
+      <label for="file">Choisir une image</label>
+      <input type="file" name="file" id="file">
+      
+      <label for="email">Email</label>
+      <input type="text" name="email" id="email">
+      
+      <button type="submit">Send</button>
+    </form>
+
     <section id="results" class="results"></section>
     <script type="module" src="./index.js"></script>
   </body>
