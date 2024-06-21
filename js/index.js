@@ -181,7 +181,7 @@ async function analyzeVideo() {
 // Dessiner les prédictions et création des images pour chaque prédictions
 const drawPredictions = (predictions) => {
   predictions.forEach((prediction, index) => {
-    if (prediction.score > 60) {
+    if (prediction.score > 0.6) {
       const predictionClass = prediction.class;
       const [x, y, width, height] = prediction.bbox;
       context.strokeStyle = "rgba(218, 0, 0, 0.215)";
