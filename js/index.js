@@ -1,8 +1,8 @@
 import {
-  dbGetByClass,
   dbAdd,
-  dbDelete,
   dbUpgrade,
+  dbGetByClass,
+  dbDelete,
 } from "./initializeindexedDB.js";
 
 dbUpgrade();
@@ -23,16 +23,19 @@ let emitterVideo,
   inputImage,
   video,
   btnStartScanOnVideoLoaded,
-  btnStopScanOnVideoLoaded;
+  btnStopScanOnVideoLoaded,
+  listFolders;
 
+let intervalId;
+const title = document.querySelector("#title");
 const section = document.querySelector("#replacer");
+const sectionList = document.querySelector("#sectionList");
+const resultScreen = document.querySelector("#resultsImages");
 const btnStartCamera = document.querySelector("#start__camera");
 const uploadMedia = document.getElementById("uploadMedia");
-const resultsContainer = document.querySelector("#results");
-const listFolders = document.querySelectorAll(".list__folder");
 const displayedImage = document.getElementById("displayedImage");
 const canvas = document.querySelector("#canvas");
-// const context = canvas.getContext("2d");
+const context = canvas.getContext("2d");
 
 const sectionImg = `<article class="container__img">
             <img id="inputImage" src="./img/5545053.jpg" alt="Image de l'utilisateur">          
@@ -46,8 +49,8 @@ const sectionVideo = `<article class="container__video">
             <div><video src="" id="video" controls></video></div>
           
             <div class="camera__btns">
-              <button id="start__scan__on_videoLoad">SCAN</button>
-              <button id="stop__scan__on_videoLoad">STOP SCAN</button>
+              <button id="start__scan__on__videoLoad">SCAN</button>
+              <button id="stop__scan__on__videoLoad">STOP SCAN</button>
               <button id="returnHub">RETOUR</button>
             </div>
           </video>
@@ -69,19 +72,7 @@ const sectionFinder = `<article id="finder" class="container__finder">
             <h2 id="clasNameH2">Chaise</h2>
             <img src="./img/logo_sharing.svg" alt="Partage des données" />
           </div>
-          <div class="list__stroke"></div>
-          <div class="finder__display">
-            <figure id="" class="display__img">
-              <img
-                src=""
-                alt="Objet trouvé par SCANOID"
-              /><input
-                type="checkbox"
-                name="finder__checkbox"
-                id="finder__checkbox"
-              />
-            </figure>            
-          </div>
+          <div class="list__stroke"></div>          
         </article>`;
 
 let stream;
@@ -91,6 +82,47 @@ cocoSsd.load().then((loadedModel) => {
 });
 
 //FONCTIONS :
+
+//Recupération des données du IndexedDB
+const recupAjoutDossier = async () => {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open("HackathonDB", 1);
+    request.onsuccess = (e) => {
+      const db = e.target.result;
+      const transaction = db.transaction("users", "readwrite");
+      const store = transaction.objectStore("users");
+      const querys = store.getAll();
+      querys.onsuccess = async () => {
+        const datas = querys.result;
+
+        await datas.forEach((data) => {
+          const nameOfDataTrim = data.name.replace(" ", "_");
+          const classExist =
+            document.getElementsByClassName(nameOfDataTrim).length > 0;
+          if (!classExist) {
+            const classNameFind = document.createElement("div");
+            classNameFind.classList.add("list__folder");
+            classNameFind.classList.add(nameOfDataTrim);
+            classNameFind.innerHTML = `<figure>
+      <img src="./img/logo_folder.svg" alt="Logo dossier" width="35" />
+    </figure>
+    <p>${data.name}</p>`;
+            resultScreen.appendChild(classNameFind);
+          }
+        });
+        listFolders = document.querySelectorAll(".list__folder");
+
+        resolve(listFolders);
+      };
+    };
+  });
+};
+recupAjoutDossier();
+
+//Envoie des données dans IndexedDB
+const envoieDeDonnees = (predictionClass, dataUrl) => {
+  dbAdd(predictionClass, dataUrl);
+};
 
 //Fonction pour démarrer la caméra.
 const startCamera = async () => {
@@ -112,31 +144,12 @@ const startCamera = async () => {
       alert("ERREUR:" + error);
     });
 };
-//Fonction pour arrêter la caméra.
-const stopCamera = () => {
-  console.log(stream);
 
-  if (stream) {
-    stream.getTracks().forEach((track) => track.stop()); // Arrêter toutes les pistes du flux
-    emitterVideo.srcObject = null; // Effacer la source de la vidéo
-  }
-};
-//Fonction pour faire les captures du média
-const snapshot = () => {
-  //Fonction screenshot/snapshot
-  const canvas = document.createElement("canvas");
-  canvas.width = emitterVideo.videoWidth; // Définir la largeur du canvas à la largeur de la vidéo
-  canvas.height = emitterVideo.videoHeight; // Définir la hauteur du canvas à la hauteur de la vidéo
-  canvas
-    .getContext("2d")
-    .drawImage(emitterVideo, 0, 0, canvas.width, canvas.height);
-
-  resultsContainer.appendChild(canvas);
-};
 //Fonction analyse de vidéo
 async function analyzeVideo() {
   // Fonction pour analyser chaque frame
-  const detectFrame = async () => {
+  intervalId = setInterval(async () => {
+    console.log("interval");
     const predictions = await model.detect(canvas);
 
     // Afficher les résultats
@@ -144,19 +157,13 @@ async function analyzeVideo() {
     context.drawImage(emitterVideo, 0, 0, canvas.width, canvas.height);
 
     drawPredictions(predictions);
-
-    // Analyser la prochaine frame
-    requestAnimationFrame(detectFrame);
-  };
-
-  // Démarrer l'analyse des frames
-  detectFrame();
+  }, 1000);
 }
 
 // Dessiner les prédictions et création des images pour chaque prédictions
 const drawPredictions = (predictions) => {
   predictions.forEach((prediction, index) => {
-    if (prediction.score > 60) {
+    if (prediction.score > 0.6) {
       const predictionClass = prediction.class;
       const [x, y, width, height] = prediction.bbox;
       context.strokeStyle = "rgba(218, 0, 0, 0.215)";
@@ -223,7 +230,6 @@ const drawImagesPredictions = (image, predictions) => {
   });
 };
 
-//
 const createImageFromImagePrediction = (canvas, x, y, width, height, index) => {
   const predictionCanvas = document.createElement("canvas");
   predictionCanvas.width = width;
@@ -238,37 +244,17 @@ const createImageFromImagePrediction = (canvas, x, y, width, height, index) => {
   document.body.appendChild(imgElement);
 };
 
-//
+const detectMediaVideoFrame = async () => {
+  if (video.paused || video.ended) {
+    return;
+  }
+  const predictions = await model.detect(video);
+  context.drawImage(video, 0, 0, canvas.width, canvas.height);
+  drawPredictions(predictions);
+  requestAnimationFrame(detectMediaVideoFrame);
+};
 
 //EVENTS
-
-//DEMO
-
-// dbAdd("table", "ouf.com");
-// dbAdd("chaise", "pas_ouf.com");
-// dbAdd("chaise", "super_ouf.com");
-//EXEMPLE POUR CHERCHER PAR NOM D'OBJET
-// dbGetByClass("chaise").then((response) => {
-//   const data = response;
-//   console.log(data);
-// });
-
-// uploadImage.addEventListener("change", (event) => {
-//   console.log(first);
-//   const file = event.target.files[0];
-//   const reader = new FileReader();
-//   reader.onload = () => {
-//     inputImage.src = reader.result;
-//     inputImage.onload = () => {
-//       detectObjects(inputImage);
-//     };
-//   };
-//   reader.readAsDataURL(file);
-// });
-
-// const envoieDeDonnees = (predictionClass, url) => {
-//   dbAdd(predictionClass, url);
-// };
 
 // Mettre à jour l'image affichée lorsque l'utilisateur choisit un fichier
 uploadMedia.addEventListener("change", (event) => {
@@ -291,25 +277,23 @@ uploadMedia.addEventListener("change", (event) => {
       window.location.reload();
     });
     // Ecouteur d'évenement si la vidéo est en mode play
-    video.addEventListener("play", (e) => {
-      btnStartScanOnVideoLoaded.addEventListener("click", (e) => {
+    video.addEventListener("play", () => {
+      btnStartScanOnVideoLoaded.addEventListener("click", () => {
         detectMediaVideoFrame();
       });
     });
-    btnStartScanOnVideoLoaded.addEventListener("click", (e) => {
+    btnStartScanOnVideoLoaded.addEventListener("click", () => {
       if (video.src) {
         video.play();
       }
-      // video.autoplay = true
+
       detectMediaVideoFrame();
     });
 
-    btnStopScanOnVideoLoaded.addEventListener("click", (e) => {
+    btnStopScanOnVideoLoaded.addEventListener("click", () => {
+      clearInterval(intervalId);
       if (!video.paused) {
         video.pause();
-        setTimeout(() => {
-          video.play();
-        }, 500);
       }
     });
   } else if (file.type.includes("image")) {
@@ -331,8 +315,6 @@ uploadMedia.addEventListener("change", (event) => {
 });
 // Déclencher le clic sur l'input de type file lorsque l'image est cliquée
 displayedImage.addEventListener("click", () => {
-  console.log("hey");
-
   uploadMedia.click();
 });
 
@@ -350,18 +332,59 @@ btnStartCamera.addEventListener("click", async () => {
   });
   btnStopScan.addEventListener("click", () => {
     emitterVideo.srcObject = null;
+    clearInterval(intervalId);
   });
   btnStopCamera.addEventListener("click", () => {
     window.location.reload();
   });
 });
 
-listFolders.forEach((listFolder) => {
-  listFolder.addEventListener("click", () => {
-    section.innerHTML = sectionFinder;
-    btnStopCamera = document.querySelector("#returnHub");
-    btnStopCamera.addEventListener("click", () => {
-      window.location.reload();
+sectionList.addEventListener("mouseenter", () => {
+  listFolders.forEach((listFolder) => {
+    listFolder.addEventListener("click", () => {
+      const nameOfImgIndexed = listFolder.lastElementChild.innerHTML;
+      section.innerHTML = sectionFinder;
+      const divImgAdd = document.createElement("div");
+      divImgAdd.classList.add("finder__display");
+      const lastChildDiv = section.lastElementChild;
+      lastChildDiv.appendChild(divImgAdd);
+
+      const request = indexedDB.open("HackathonDB", 1);
+      request.onsuccess = (e) => {
+        const db = e.target.result;
+        const transaction = db.transaction("users", "readwrite");
+        const store = transaction.objectStore("users");
+        const nameIndex = store.index("by_name");
+        const query = nameIndex.getAll(nameOfImgIndexed);
+
+        query.onsuccess = () => {
+          const datas = query.result;
+
+          datas.forEach((data) => {
+            console.log(data.url);
+            const figure = document.createElement("figure");
+            figure.classList.add("display__img");
+            figure.innerHTML = `              
+                <img
+                  src="${data.url}"
+                  alt="Objet trouvé par SCANOID"
+                /><input
+                  type="checkbox"
+                  name="finder__checkbox"
+                  id="finder__checkbox"
+                />`;
+            divImgAdd.appendChild(figure);
+            btnStopCamera = document.querySelector("#returnHub");
+            btnStopCamera.addEventListener("click", () => {
+              window.location.reload();
+            });
+          });
+        };
+      };
     });
   });
+});
+
+title.addEventListener("click", () => {
+  window.location.reload();
 });

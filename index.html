@@ -15,7 +15,7 @@
   <body id="page" class="">
     <header>
       <nav>
-        <h2>SCANOID</h2>
+        <h2 id="title">SCANOID</h2>
         <div class="header__switch">
           <input type="checkbox" name="darkMode" id="darkMode" />
           <label class="switch">
@@ -47,24 +47,13 @@
         </article>
       </section>
 
-      <section id="resultsImages" class="list none">
+      <section id="sectionList" class="list none">
         <h2>OBJETS TROUVES</h2>
         <div class="list__stroke"></div>
-        <div class="list__container">
-          <div class="list__folder">
-            <figure>
-              <img src="./img/logo_folder.svg" alt="Logo dossier" width="35" />
-            </figure>
-            <p>Chaise</p>
-          </div>
-          <div class="list__folder">
-            <figure>
-              <img src="./img/logo_folder.svg" alt="Logo dossier" width="35" />
-            </figure>
-            <p>Chaise</p>
-          </div>
-        </div>
+        <div id="resultsImages" class="list__container"></div>
       </section>
+      <canvas id="canvas" class="none"></canvas>
+      <canvas id="outputCanvas" class="none"></canvas>
     </main>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>

@@ -1,13 +1,12 @@
 export const dbUpgrade = () => {
   const request = indexedDB.open("HackathonDB", 1);
-
-  //Rentre ici si une information de création est différente de celle existante
+  // Rentre ici si une information de création est différente de celle existante
   request.onupgradeneeded = (e) => {
-    const db = e.target.result; 
-
+    const db = e.target.result; // db = request.result === PAREIL !!!
     //Creation de l'Objet principal "users"
     const store = db.createObjectStore("users", {
       keyPath: "url",
+      autoincrement: true,
     });
     //Creation d'index de tri de la BD
     store.createIndex("by_name", "name");
@@ -16,6 +15,7 @@ export const dbUpgrade = () => {
 
 //FONCTION GET de tous les objets avec le nom entré
 export const dbGetByClass = async (nameClass) => {
+  console.log("oui 4");
   return new Promise((RESOLVE, REJECT) => {
     const request = indexedDB.open("HackathonDB", 1);
 
@@ -38,6 +38,7 @@ export const dbGetByClass = async (nameClass) => {
 
 //FONCTION ADD avec comme paramètre le nom de l'objet et l'url
 export const dbAdd = (name, url) => {
+  console.log("oui 5");
   const request = indexedDB.open("HackathonDB", 1);
 
   request.onsuccess = (e) => {
@@ -56,6 +57,7 @@ export const dbAdd = (name, url) => {
 
 //FONCTION DELETE avec comme paramètre l'url
 export const dbDelete = (chemin) => {
+  console.log("oui 6");
   const request = indexedDB.open("HackathonDB", 1);
 
   //Rentre ici si toutes les données match
