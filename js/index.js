@@ -1,67 +1,71 @@
 const resultsContainer = document.querySelector("#results");
-const btnStart = document.querySelector("#start");
-const btnStop = document.querySelector("#stop");
+const btnStartCamera = document.querySelector("#start__camera");
+const btnStopCamera = document.querySelector("#stop__camera");
+const btnStartScan = document.querySelector("#start__scan");
+const btnStopScan = document.querySelector("#stop__scan");
 const btnScreenshot = document.querySelector("#screenshot");
 const emitterVideo = document.querySelector("#emitter-video");
+const uploadMedia = document.querySelector("#uploadMedia");
 let stream; // Déclare une variable pour stocker le flux
 
-const canvas = document.querySelector('#canvas');
-const context = canvas.getContext('2d');
+const canvas = document.querySelector("#canvas");
+const context = canvas.getContext("2d");
 
 let model;
 
-cocoSsd.load().then(loadedModel =>
-{
+cocoSsd.load().then((loadedModel) => {
   model = loadedModel;
 });
 
 //////////////////   SNAPSHOT //////////////////////////////////////////////
 
-const snapshot = () =>
-{
+const snapshot = () => {
   const canvas = document.createElement("canvas");
   canvas
     .getContext("2d")
-    .drawImage(emitterVideo,0,0, canvas.width, canvas.height);
+    .drawImage(emitterVideo, 0, 0, canvas.width, canvas.height);
 
   resultsContainer.appendChild(canvas);
 };
 
-
 // Demander l'accès à la webcam
 
-btnStart.addEventListener('click', async () =>
-{
-  navigator.mediaDevices.getUserMedia(
-    {
+btnStartCamera.addEventListener("click", async () => {
+  navigator.mediaDevices
+    .getUserMedia({
       video: true,
-    }
-  ).then((mediaStream) =>
-  {
-    stream = mediaStream;
-    if ("srcObject" in emitterVideo)
-    {
-      emitterVideo.srcObject = stream;
-      } else
-      {
+    })
+    .then((mediaStream) => {
+      console.log("MediaStream => ", mediaStream);
+      stream = mediaStream;
+      if ("srcObject" in emitterVideo) {
+        emitterVideo.srcObject = stream;
+      } else {
         emitterVideo.src = window.URL.createObjectURL(stream);
-        }
-        emitterVideo.play();
-        analyzeVideo()
-  }).catch(() =>
-  {
-    alert("ERREUR: camera ou video indisponible");
-  });
+      }
+      emitterVideo.play();
+      //  analyzeVideo();
+    })
+    .catch(() => {
+      alert("ERREUR: camera ou video indisponible");
+    });
 });
 
+// Demarrage du scan de la vidéo
+btnStartScan.addEventListener("click", (e) => {
+  analyzeVideo();
+});
 
+btnStopScan.addEventListener("click", (e) => {
+  // emitterVideo.stop()
+  emitterVideo.srcObject = null;
+});
 
 /**
  * Ecouteur d'évènement sur "Arrêter la caméra"
  */
-btnStop.addEventListener("click", () => {
- stopCamera();
-
+btnStopCamera.addEventListener("click", () => {
+  stopCamera();
 
   console.log("Stop ", stream);
 });
@@ -69,23 +73,18 @@ btnStop.addEventListener("click", () => {
 /**
  * Fonction pour arrêter la caméra.
  */
-const stopCamera = () =>
-{
+const stopCamera = () => {
   console.log(stream);
 
-  if (stream)
-  {
+  if (stream) {
     stream.getTracks().forEach((track) => track.stop()); // Arrêter toutes les pistes du flux
     emitterVideo.srcObject = null; // Effacer la source de la vidéo
   }
 };
 
-
-btnScreenshot.addEventListener("click", () =>
-{
- snapshot();
+btnScreenshot.addEventListener("click", () => {
+  snapshot();
 });
-
 
 // Analyse des screenshots
 /*
@@ -152,16 +151,12 @@ console.log("Screenshot", valueImg);
 
 */
 
-
 /**
  *  Fonction de detection et d'analyse du flux vidéo
  */
-async function analyzeVideo()
-{
-
+async function analyzeVideo() {
   // Fonction pour analyser chaque frame
-  const detectFrame = async () =>
-  {
+  const detectFrame = async () => {
     const predictions = await model.detect(canvas);
 
     // Afficher les résultats
@@ -170,146 +165,170 @@ async function analyzeVideo()
 
     drawPredictions(predictions);
 
-
-    predictions.forEach(prediction =>
-    {
-      const [x, y, width, height] = prediction.bbox;
-      context.beginPath();
-      context.rect(...prediction.bbox);
-      context.lineWidth = 2;
-      context.strokeStyle = 'green';
-      context.fillStyle = 'green';
-      context.stroke();
-      context.fillText(
-        `${prediction.class} (${Math.round(prediction.score * 100)}%)`,
-        prediction.bbox[0],
-        prediction.bbox[1] > 10 ? prediction.bbox[1] - 5 : 10
-      );
-    });
-
     // Analyser la prochaine frame
+    // setInterval(() =>
+    // {
+
+    // }, 2000);
     requestAnimationFrame(detectFrame);
-  }
+  };
 
   // Démarrer l'analyse des frames
+
   detectFrame();
 }
 
 // Dessiner les prédictions et création des images pour chaque prédictions
-const drawPredictions = (predictions) =>
-{
-  predictions.forEach((prediction, index) =>
-  {
-    const [x, y, width, height] = prediction.bbox;
-    context.strokeStyle = 'red';
-    context.lineWidth = 2;
-    context.strokeRect(x, y, width, height);
-    context.font = '18px Arial';
-    context.fillStyle = 'red';
-    context.fillText(prediction.class, x, y > 10 ? y - 5 : 10);
+const drawPredictions = (predictions) => {
+  predictions.forEach((prediction, index) => {
+    if (prediction.score > 60) {
+      const predictionClass = prediction.class;
+      const [x, y, width, height] = prediction.bbox;
+      context.strokeStyle = "rgba(218, 0, 0, 0.215)";
+      context.lineWidth = 1;
+      context.strokeRect(x, y, width, height);
+      console.log(prediction, index);
 
-    // Create individual image for each prediction
-    createImageFromPrediction(x, y, width, height, index);
+      // Creation d'image pour chaque prédiction
+      createImageFromPrediction(x, y, width, height, index, predictionClass);
+    }
   });
-}
+};
 
-const createImageFromPrediction = (x, y, width, height, index) =>
-{
-  const predictionCanvas = document.createElement('canvas');
+const createImageFromPrediction = (
+  x,
+  y,
+  width,
+  height,
+  index,
+  predictionClass
+) => {
+  const predictionCanvas = document.createElement("canvas");
   predictionCanvas.width = width;
   predictionCanvas.height = height;
-  const predictionCtx = predictionCanvas.getContext('2d');
+  const predictionCtx = predictionCanvas.getContext("2d");
   predictionCtx.drawImage(canvas, x, y, width, height, 0, 0, width, height);
 
   const dataUrl = predictionCanvas.toDataURL();
-  const imgElement = document.createElement('img');
+  const imgElement = document.createElement("img");
   imgElement.src = dataUrl;
   imgElement.alt = `Prediction ${index + 1}`;
+  console.log("Index prédictions => ", index);
   document.body.appendChild(imgElement);
-}
-
-
-
-
-
+};
 
 /*****************************
  *  Détections depuis une image
  **************************/
 
-const uploadImage = document.getElementById('uploadImage');
-const inputImage = document.getElementById('inputImage');
+//const uploadImage = document.getElementById("uploadImage");
+const video = document.querySelector("#video");
+const inputImage = document.getElementById("inputImage");
 
-uploadImage.addEventListener('change', (event) =>
-{
-  console.log(first)
+uploadMedia.addEventListener("change", (event) => {
   const file = event.target.files[0];
-  const reader = new FileReader();
-  reader.onload = () =>
-  {
-    inputImage.src = reader.result;
-    inputImage.onload = () =>
-    {
-      detectObjects(inputImage);
+  //  console.log(file);
+
+  if (file.type.includes("video")) {
+    const url = URL.createObjectURL(file);
+    video.src = url;
+    video.load();
+  } else if (file.type.includes("image")) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      inputImage.src = reader.result;
+      inputImage.onload = () => {
+        detectObjects(inputImage);
+      };
     };
-  };
-  reader.readAsDataURL(file);
+    reader.readAsDataURL(file);
+  }
 });
 
+const btnStartScanOnVideoLoaded = document.querySelector(
+  "#start__scan__on__videoLoad"
+);
+const btnStopScanOnVideoLoaded = document.querySelector(
+  "#stop__scan__on__videoLoad"
+);
+// Ecouteur d'évenement si la vidéo est en mode play
 
- const detectObjects = async (image) =>
-{
+video.addEventListener("play", (e) => {
+  btnStartScanOnVideoLoaded.addEventListener("click", (e) => {
+    detectMediaVideoFrame();
+  });
+});
+
+btnStartScanOnVideoLoaded.addEventListener("click", (e) => {
+  if (video.src) {
+    video.play();
+  }
+  // video.autoplay = true
+  detectMediaVideoFrame();
+});
+
+btnStopScanOnVideoLoaded.addEventListener("click", (e) => {
+  if (!video.paused) {
+    video.pause();
+    setTimeout(() => {
+      video.play();
+    }, 500);
+  }
+});
+
+const detectMediaVideoFrame = async () => {
+  if (video.paused || video.ended) {
+    return;
+  }
+  const predictions = await model.detect(video);
+  context.drawImage(video, 0, 0, canvas.width, canvas.height);
+  drawPredictions(predictions);
+  requestAnimationFrame(detectMediaVideoFrame);
+};
+
+// Detections d'objets depuis une source image
+const detectObjects = async (image) => {
   const model = await cocoSsd.load();
   const predictions = await model.detect(image);
   console.log(predictions);
   drawImagesPredictions(image, predictions);
-}
+};
 
-// 
-
-
-const drawImagesPredictions = (image, predictions) =>
-{
-  const canvas = document.getElementById('outputCanvas');
-  const ctx = canvas.getContext('2d');
+// Dessiner les prédictions détectées depuis une image
+const drawImagesPredictions = (image, predictions) => {
+  const canvas = document.getElementById("outputCanvas");
+  const ctx = canvas.getContext("2d");
   canvas.width = image.width;
   canvas.height = image.height;
   ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
 
-  predictions.forEach((prediction, index) =>
-  {
-    if(prediction.score >0.60) {
+  predictions.forEach((prediction, index) => {
+    if (prediction.score > 0.6) {
+      const [x, y, width, height] = prediction.bbox;
+      ctx.strokeStyle = "rgba(255, 0, 0, 0.184";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x, y, width, height);
+      //   ctx.font = "18px Arial";
+      //   ctx.fillStyle = "red";
+      // ctx.fillText(prediction.class, x, y > 10 ? y - 5 : 10);
 
-const [x, y, width, height] = prediction.bbox;
-    ctx.strokeStyle = 'rgba(255, 0, 0, 0.184';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(x, y, width, height);
-    ctx.font = '18px Arial';
-    ctx.fillStyle = 'red';
-   // ctx.fillText(prediction.class, x, y > 10 ? y - 5 : 10);
-
-
-    // Créer une image pour chaque prédiction
-    createImageFromImagePrediction(canvas, x, y, width, height, index);
-
+      // Créer une image pour chaque prédiction
+      createImageFromImagePrediction(canvas, x, y, width, height, index);
     }
-    
   });
-}
+};
 
-// 
-const createImageFromImagePrediction = (canvas, x, y, width, height, index) =>
-{
-  const predictionCanvas = document.createElement('canvas');
+//
+const createImageFromImagePrediction = (canvas, x, y, width, height, index) => {
+  const predictionCanvas = document.createElement("canvas");
   predictionCanvas.width = width;
   predictionCanvas.height = height;
-  const predictionCtx = predictionCanvas.getContext('2d');
+  const predictionCtx = predictionCanvas.getContext("2d");
   predictionCtx.drawImage(canvas, x, y, width, height, 0, 0, width, height);
 
   const dataUrl = predictionCanvas.toDataURL();
-  const imgElement = document.createElement('img');
+  const imgElement = document.createElement("img");
   imgElement.src = dataUrl;
   imgElement.alt = `Prediction ${index + 1}`;
   document.body.appendChild(imgElement);
-}
-
+};

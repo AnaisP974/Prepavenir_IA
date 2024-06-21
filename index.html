@@ -4,11 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="./css/index.css" />
-    <link rel="stylesheet" href="./css/theme___.css" />
     <title>Document</title>
   </head>
   <body>
-     <header>
+    <header>
       <div class="header__switch">
         <p class="header__switch--p">Jour/Nuit</p>
         <label class="switch">
@@ -18,36 +17,36 @@
       </div>
     </header>
     <div class="block-1">
-
-
-
+      <h2>CAMERA</h2>
     </div>
     <section class="container">
-
-      <h2>CAMERA </h2>
-        <button id="start">Démarrer la caméra</button>
-        <button id="stop">Arrêter la caméra</button>
-        <button id="screenshot">Screenshot !</button>
-     <section class="container">
-       <input type="file" id="uploadImage" accept="image/*, video/*" />
-     </section>
-      <article class="container__camera">
-
-
-        <video src="" id="video" width="640" height="220"></video>
-        <video id="emitter-video" width="50%" height="200px" style""></video>
-        
-      </article>
+      <button id="start__camera">Démarrer la caméra</button>
+      <button id="stop__camera">Arrêter la caméra</button>
+      <button id="start__scan">Demarrer le scan</button>
+      <button id="stop__scan">Arrêter le scan</button>
+      <button id="screenshot">Screenshot !</button>
+      <button id="start__scan__on__videoLoad">
+        Demarrer le scan sur video téléchargée
+      </button>
+      <button id="stop__scan__on__videoLoad">
+        Arrêter le scan sur video téléchargée
+      </button>
+      <section class="container">
+        <input type="file" id="uploadMedia" accept="image/*, video/*" />
+      </section>
+      <article class="container__camera"></article>
     </section>
-    <section>
-
+    <section class="traitement">
+      <video src="" id="video" width="600" height="320" controls></video>
+      <video id="emitter-video"  height="320"></video>
     </section>
-     <canvas id="canvas" height="300"width="400" ></canvas>
-     <section id="results" class="results"></section>
-<img id="inputImage" style="display: none;" />
+    <section class="container">
+    <canvas id="canvas"></canvas>
+     <canvas id="outputCanvas"></canvas>
+    </section>
+    <section id="results" class="results"></section>
+    <img id="inputImage" style="display: none" />
 
-
-    <canvas id="outputCanvas"></canvas>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
     <script type="module" src="./js/index.js"></script>
